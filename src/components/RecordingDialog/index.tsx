@@ -131,7 +131,7 @@ const RecordingDialog = (prop: RecordingDialogProp) => {
         video: false,
       }
 
-      let stream = await navigator.mediaDevices.getUserMedia(constraints)
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
 
       const recorder = new MediaRecorder(stream)
       setChunks([])
@@ -147,7 +147,7 @@ const RecordingDialog = (prop: RecordingDialogProp) => {
     }
   }
 
-  const removeMicrophoneAccess = async () => {
+  const removeMicrophoneAccess = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach(track => track.stop())
       setMediaStream(undefined)
@@ -206,7 +206,7 @@ const RecordingDialog = (prop: RecordingDialogProp) => {
                   <div className="items-center justify-center">
                     {audioData.url && (
                       <Waveform
-                        url={audioData.url as string}
+                        url={audioData.url }
                         playerState={filteredData[filteredData.length - 1].playerState}
                         isMuted={filteredData[filteredData.length - 1].isMuted}
                         onToggleSound={() => onToggleSound(filteredData[filteredData.length - 1])}

@@ -47,7 +47,7 @@ const Waveform: React.FC<WaveformProps> = ({
           hideCursor: true,
           responsive: true,
           normalize: true,
-          height: 35,
+          height: 25,
           barHeight: 10,
           barWidth: 2,
           fillParent: false,
@@ -110,7 +110,7 @@ const Waveform: React.FC<WaveformProps> = ({
       )}
       {isSelecting && (
         <button
-          className={classNames('rounded-sm px-4 py-2 text-black', {
+          className={classNames('rounded-sm text-sm px-4 py-2 text-black', {
             'bg-yellow-500': !isSelected,
             'bg-green-500': isSelected,
           })}

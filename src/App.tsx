@@ -18,8 +18,9 @@ import {
   Routes,
 } from "react-router-dom";
 
-import Editor from 'pages/editor';
 import PageIndex from 'pages';
+import PageEditor from 'pages/editor';
+import PageNft from 'pages/nft';
 
 
 const App = () => {
@@ -28,7 +29,8 @@ const App = () => {
       <MainLayout>
         <Routes>
           <Route path="/" element={<PageIndex />} />
-          <Route path="/editor/:nft_key" element={<Editor />} />
+          <Route path="/nft/:address/:tokenId/:chainId" element={<PageNft />} />
+          <Route path="/editor/:nftKey/:tokenId" element={<PageEditor />} />
         </Routes>
       </MainLayout>
     </Web3Wrapper>
@@ -65,9 +67,8 @@ const connectors = connectorsForWallets([
       rainbowWeb3AuthConnector({ chains }),
       metaMaskWallet({
         chains,
-        projectId: 'some_string',
+        projectId: '',
       }),
-      walletConnectWallet({ chains, projectId: 'some_string', version: '1' }),
     ],
   },
 ]);

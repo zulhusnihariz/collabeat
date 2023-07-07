@@ -28,10 +28,11 @@ module.exports = {
     "@typescript-eslint/restrict-plus-operands": "warn",
     "@typescript-eslint/no-unsafe-call": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
-    "@typescript-eslint/restrict-template-expressions": "warn",
+    "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-floating-promises": "warn",
     "@typescript-eslint/no-unsafe-argument": "warn",
-    "@typescript-eslint/no-misused-promises": "off"
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-unsafe-return": "off"
   },
 }

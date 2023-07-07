@@ -64,7 +64,7 @@ export const rainbowWeb3AuthConnector = ({ chains }: any) => {
         logoDark: iconUrl,
         logoLight: iconUrl,
       },
-      useWalletConnect: true,
+      useWalletConnect: false,
       enableLogging: true,
     },
   });

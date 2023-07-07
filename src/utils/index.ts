@@ -37,7 +37,7 @@ export function mixAudioBuffer(
 }
 
 export const createMixedAudio = async (audioContext: AudioContext, dataKey: string) => {
-  const res = await fetch(`${import.meta.env.VITE_LINEAGE_NODE_URL}metadata/${dataKey}`)
+  const res = await fetch(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${dataKey}`)
   const metadata = await res.json()
 
   const urls = []

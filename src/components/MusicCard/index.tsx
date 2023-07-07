@@ -10,10 +10,8 @@ interface MusicCardProp {
   description: String;
   sheet: Sheet;
   audioUrls: Array<string>;
-  onHandleRecordClicked: (tokenId: string) => void;
   onHandleShareClicked: (datakey: string) => void;
   onHandlePlayClicked: (dataKey: string) => void;
-  onHandleMintClicked: (data: { tokenId: string; owner: string }) => void;
   updatePlayerState: (dataKey: string, state: PlayerState) => void;
   audioState: {
     [key: string]: PlayerState;
@@ -38,7 +36,7 @@ const MusicCard = (prop: MusicCardProp) => {
 
   return (
     <>
-      <div className="bg-pink px-4 py-2 text-white sm:w-1/2 md:w-full">
+      <div className="bg-red-900 rounded-lg px-4 py-2 text-white w-full">
         <div className="flex justify-between">
           <div className="">
             <p className="text-left text-base font-semibold text-[#F6F8FF]">{`Collabeat #${prop.tokenId}`}</p>
@@ -69,7 +67,7 @@ const MusicCard = (prop: MusicCardProp) => {
 
         <div className="z-10 flex w-full items-center justify-between gap-2 py-2">
           <button
-            onClick={e => navigate(`/${prop.sheet.data_key}${prop.sheet.token_id}`)}
+            onClick={e => navigate(`/editor/${prop.sheet.data_key}/${prop.sheet.token_id}`)}
             className="flex cursor-pointer flex-row items-center justify-center gap-2 rounded-3xl bg-[#ff00ae] px-3 py-1 md:hover:scale-105"
           >
             <span>Collaborate</span>

@@ -8,7 +8,7 @@ import {Link} from 'react-router-dom'
 export default function Header() {
   return (
     <Disclosure as="nav" className="bg-transparent">
-      <div className="mx-auto max-w-[3840px]">
+      <div className="mx-auto max-w-[3840px] py-5">
         <div className="relative flex h-16 items-center justify-between">
           <div className="flex flex-1 items-center sm:items-stretch sm:justify-start">
             <div className="flex flex-shrink-0 items-center">

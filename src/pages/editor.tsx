@@ -1,6 +1,5 @@
 import Waveform from 'components/Waveform'
 import { AudioState, PlayerState, SelectedAudio } from 'lib'
-import { useParams } from 'react-router-dom'
 import { useContext, useEffect, useState } from 'react'
 import RecordingDialog from 'components/RecordingDialog'
 import MintButton from 'components/MintButton'
@@ -13,14 +12,15 @@ import { AlertMessageContext } from 'hooks/use-alert-message'
 import { createMixedAudio } from 'utils'
 import audioBuffertoWav from 'audiobuffer-to-wav'
 import { check_if_bookmarked } from 'apollo-client'
+import { useParams } from 'react-router-dom'
+import exportImg from 'assets/icons/export.png'
 
-const Editor = () => {
-  const { nft_key } = useParams()
+const PageEditor = () => {
+  const { nftKey, tokenId } = useParams()
+  console.log(nftKey, tokenId)
   const { address } = useAccount()
   const { showError } = useContext(AlertMessageContext)
 
-  const [dataKey, setDataKey] = useState('')
-  const [tokenId, setTokenId] = useState('')
   const [displayDownloadButton, setDisplayDownloadButton] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
@@ -68,7 +68,7 @@ const Editor = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const d = await fetch(`${import.meta.env.VITE_LINEAGE_NODE_URL}metadata/${dataKey}`)
+        const d = await fetch(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${nftKey}`)
         const j = await d.json()
         setData(j)
       } catch (e) {
@@ -76,30 +76,17 @@ const Editor = () => {
       }
     }
 
-    if (data == null && dataKey) {
+    if (data == null && nftKey) {
       load()
     }
-  }, [dataKey, data])
+  }, [nftKey, data])
 
   useEffect(() => {
     const checkBookmarked = async (tokenId: string) => {
       const isMinted = await check_if_bookmarked(address ?? '0x', tokenId)
       setDisplayDownloadButton(isMinted)
     }
-
-    if (!dataKey && !tokenId) {
-      const regex = new RegExp('.{1,' + 64 + '}', 'g')
-
-      if(!nft_key) return
-      const result = nft_key.toString().match(regex)
-
-      if(result && result[0] && result[1]){
-        checkBookmarked(result[1])
-        setDataKey(result[0])
-        setTokenId(result[1])
-      }
-    }
-  }, [dataKey, tokenId])
+  }, [nftKey, tokenId])
 
   const setAllState = (state: PlayerState) => {
     setFilteredData(prev =>
@@ -154,8 +141,9 @@ const Editor = () => {
   }
 
   const onHandleCheckMetadata = () => {
-    window.open(`${import.meta.env.VITE_LINEAGE_NODE_URL}metadata/${dataKey}`, '_blank')
+    window.open(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${nftKey}`, '_blank')
   }
+
   const onHandleDialogClosed = () => {
     setTimeout(() => {
       setData(undefined)
@@ -187,7 +175,7 @@ const Editor = () => {
       if (audio.selected) {
         selections.push({
           owner: audio.key,
-          data_key: dataKey,
+          data_key: nftKey,
           cid: audio.data,
         } as SelectedAudio)
       }
@@ -201,7 +189,7 @@ const Editor = () => {
   async function downloadBeat() {
     setIsDownloading(true)
 
-    const mixed = await createMixedAudio(audioContext, dataKey)
+    const mixed = await createMixedAudio(audioContext, nftKey!)
     const blob = new Blob([audioBuffertoWav(mixed)], { type: 'audio/wav' })
 
     const url = window.URL.createObjectURL(blob)
@@ -227,7 +215,7 @@ const Editor = () => {
 
   return (
     <>
-      <div className="px-2 pb-5">
+      <div className="px-2 pb-5 pb-[130px]">
         <div className="fixed bottom-0 left-0 mb-5 flex w-full items-center justify-center">
           <div className="flex items-center justify-between rounded-xl bg-gray-700 p-2">
             {finishedCounter <= 0 ? (
@@ -275,15 +263,15 @@ const Editor = () => {
                   setIsDialogForkOpened(true)
                 }}
               >
-                Remix
+                Export
               </button>
             )}
           </div>
         </div>
-        {dataKey && tokenId && (
+        {nftKey && tokenId && (
           <div className="flex items-center justify-between py-5">
             <div className="flex gap-1 md:gap-2">
-              {tokenId && <MintButton tokenId={tokenId} />}
+              {/* {tokenId && <MintButton tokenId={tokenId} />} */}
 
               {isForking ? (
                 <button
@@ -297,9 +285,8 @@ const Editor = () => {
                   className={`from-20% flex h-20 w-20 flex-col items-center justify-center rounded-sm bg-gradient-to-t from-[#F5517B] to-[#FEDC00] p-2 text-xs font-bold text-white md:hover:scale-105`}
                   onClick={() => toggleForkingMode()}
                 >
-                  <img className="mb-1" src="/assets/fork-icon.png" height={20} width={20} alt="fork icon" />
-                  <span>Remix</span>
-                  <span>This Beat</span>
+                  <img className="mb-1" src={exportImg} height={20} width={20} alt="fork" />
+                  <span>Export</span>
                 </button>
               )}
 
@@ -336,8 +323,8 @@ const Editor = () => {
             filteredData.map((audioState, key) => {
               if (audioState.data) {
                 return (
-                  <div key={key} className="border-1 m-1 h-[80px] rounded-full bg-white px-8 py-2 text-left">
-                    <div className="mb-2 whitespace-nowrap rounded-full bg-purple-100 px-2 py-0.5 text-xs text-black md:text-sm">
+                  <div key={key} className="border-1 m-1 h-[90px] rounded-lg bg-[#181818] px-8 py-2 text-left">
+                    <div className="mb-2 whitespace-nowrap text-gray-400 text-sm text-black">
                       {audioState.key.toString()}
                     </div>
                     <div className="h-1/2 w-full">
@@ -361,9 +348,9 @@ const Editor = () => {
           )}
         </div>
       </div>
-      {isDialogRecordingOpened && (
+      {isDialogRecordingOpened && nftKey && tokenId && (
         <RecordingDialog
-          dataKey={dataKey}
+          dataKey={nftKey}
           tokenId={tokenId}
           isOpened={isDialogRecordingOpened}
           onDialogClosed={() => onHandleDialogClosed()}
@@ -371,18 +358,18 @@ const Editor = () => {
           setAllState={state => setAllState(state)}
         />
       )}
-      {isDialogForkOpened && (
+      {isDialogForkOpened && nftKey && tokenId && (
         <ForkDialog
           tokenId={tokenId}
-          dataKey={dataKey}
+          dataKey={nftKey}
           isOpened={isDialogForkOpened}
           selectedAudios={forkData}
           onDialogClosed={() => setIsDialogForkOpened(false)}
         />
       )}
-      {isShareDialogShow && <ShareDialog dataKey={dataKey} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
+      {isShareDialogShow && nftKey && <ShareDialog dataKey={nftKey} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
     </>
   )
 }
 
-export default Editor
+export default PageEditor
