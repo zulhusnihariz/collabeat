@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
 import { connectorsForWallets, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
 import { goerli, polygonMumbai } from 'wagmi/chains';
 import { createConfig, configureChains, WagmiConfig } from 'wagmi';
@@ -21,18 +21,23 @@ import {
 import PageIndex from 'pages';
 import PageEditor from 'pages/editor';
 import PageNft from 'pages/nft';
+import PageInventory from 'pages/inventory';
+import { ApiProvider } from 'hooks/use-api';
 
 
 const App = () => {
   return (
     <Web3Wrapper>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<PageIndex />} />
-          <Route path="/nft/:address/:tokenId/:chainId" element={<PageNft />} />
-          <Route path="/editor/:nftKey/:tokenId" element={<PageEditor />} />
-        </Routes>
-      </MainLayout>
+      <ApiProvider>
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<PageIndex />} />
+            <Route path="/nft" element={<PageNft />} />
+            <Route path="/editor/:nftKey/:tokenId" element={<PageEditor />} />
+            <Route path="/inventory" element={<PageInventory />} />
+          </Routes>
+        </MainLayout>
+      </ApiProvider>
     </Web3Wrapper>
   )
 }

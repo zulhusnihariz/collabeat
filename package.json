@@ -27,6 +27,7 @@
     "@web3auth/web3auth-wagmi-connector": "^4.0.1",
     "apollo-client": "^2.6.10",
     "audiobuffer-to-wav": "^1.0.0",
+    "axios": "^1.4.0",
     "bn.js": "^5.2.1",
     "classnames": "^2.3.2",
     "ethers": "^6.6.2",

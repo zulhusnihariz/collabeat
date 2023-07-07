@@ -3,7 +3,7 @@ import MusicCard from "components/MusicCard"
 import ShareDialog from "components/ShareDialog"
 import { PlayerState, Sheet } from "lib"
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { createMixedAudio } from "utils"
 import AddMusicIcon from 'assets/icons/addmusic.svg'
 
@@ -49,7 +49,16 @@ const beats = {
 }
 
 const PageNft = () => {
-  const {address, tokenId, chainId} = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const { nft } = location.state || {}
+
+  useEffect(() => {
+    if(!nft) {
+      navigate('/inventory')
+    }
+  }, [nft, navigate])
 
   const [shareDialogState, setShareDialogState] = useState({
     dataKey: '',
@@ -106,23 +115,24 @@ const PageNft = () => {
   };
 
   return (
-    <div className="flex justify-center">
+    <>
+      {nft && <div className="flex justify-center">
       <div className="block w-3/4">
         <div className="bg-[#181818] rounded p-4">
           <div className="flex">
-            <div className="flex-auto w-1/2">
-              <img src={data.image} />
+            <div className="flex-auto w-1/4">
+              <img src={nft.metadata.image} className="rounded-lg bg-white w-full h-full"/>
             </div>
-            <div className="flex-auto px-5">
+            <div className="flex-auto w-3/4 px-5">
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold">{data.title}</span>
+                <span className="text-2xl font-bold">{nft.metadata.name}</span>
               </div>
               <div>
                 <div className="flex justify-between text-gray-400 text-sm my-2">
-                  <div className="">Address: {address} <span className="mx-3">&#8226;</span> #{tokenId} <span className="mx-3">&#8226;</span> <ChainName chainId={String(chainId)} /></div>
+                  <div className="">Address: {nft.address} <span className="mx-3">&#8226;</span> #{nft.token_id} <span className="mx-3">&#8226;</span> <ChainName chainId="56" /></div>
                 </div>
                 <p className="">
-                  {data.description}
+                  {nft.metadata.description}
                 </p>
               </div>
             </div>
@@ -173,7 +183,8 @@ const PageNft = () => {
           />
         )}
       </div>
-    </div>
+    </div>}
+    </>
   )
 }
 
