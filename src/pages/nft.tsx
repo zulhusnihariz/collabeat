@@ -140,7 +140,12 @@ const PageNft = () => {
         </div>
 
         <div className="mt-5 bg-[#181818] rounded p-4">
-          <div className="text-2xl font-semibold mb-4">NFT Beats</div>
+          <div className="text-2xl font-semibold mb-4">Release Beats</div>
+          <div className="font-xs text-gray-400">You have have not release any beats yet</div>
+        </div>
+        
+        <div className="mt-5 bg-[#181818] rounded p-4">
+          <div className="text-2xl font-semibold mb-4">Unrelease Beats</div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-4">
             <div className="bg-red-900 rounded-lg px-4 py-2 text-white w-full flex items-center justify-center cursor-pointer hover:border hover:border-white">
               <div className="block">
