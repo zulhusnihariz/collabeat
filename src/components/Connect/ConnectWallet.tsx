@@ -1,87 +1,58 @@
 import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+// import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useBoundStore } from 'store';
 import { CURRENT_CHAIN } from 'store/slices/wallet.slice';
 import { useEffect } from 'react';
+import { useConnect } from 'wagmi'
+interface WalletProp {
+  chain: CURRENT_CHAIN,
+  chainId: number
+}
 
-export default function ConnectWallet() {
+const RenderChain = (prop: {chain: CURRENT_CHAIN}) => {
+  switch(prop.chain) {
+    case CURRENT_CHAIN.ETHEREUM:
+      return 'Ethereum'
+    case CURRENT_CHAIN.POLYGON:
+      return 'Polygon'
+    case CURRENT_CHAIN.BINANCE:
+      return 'Binance'
+  }
+}
+
+export default function ConnectWallet(prop: WalletProp) {
   const { setCurrentWalletState, setWalletState, setModalState } = useBoundStore();
   const { isConnected, isDisconnected, address } = useAccount();
 
   useEffect(() => {
     if (isConnected) {
       setModalState({ signUpMain: { isOpen: false } });
-      setCurrentWalletState({ chain: CURRENT_CHAIN.EVM });
+      setCurrentWalletState({ chain: prop.chain });
       setWalletState({ evm: { address, publicKey: address } });
     }
     if (isDisconnected) setCurrentWalletState({ chain: undefined });
   }, [isConnected]);
-
+  
+  const { connect, connectors, isLoading, pendingConnector } = useConnect({
+    chainId: prop.chainId
+  })
+  
   return (
-    // (current.chain === null || current.chain === CURRENT_CHAIN.EVM)
-    <ConnectButton.Custom>
-      {({ account, chain, openChainModal, openConnectModal, authenticationStatus, mounted }) => {
-        // Note: If your app doesn't use authentication, you
-        // can remove all 'authenticationStatus' checks
-        const ready = mounted && authenticationStatus !== 'loading';
-        const connected =
-          ready && account && chain && (!authenticationStatus || authenticationStatus === 'authenticated');
-
-        return (
-          <div
-            {...(!ready && {
-              'aria-hidden': true,
-              'style': {
-                opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
-              },
-            })}
-          >
-            {(() => {
-              if (!connected) {
-                return (
-                  <button onClick={openConnectModal} type="button">
-                    Connect Wallet
-                  </button>
-                );
-              }
-
-              if (chain.unsupported) {
-                return (
-                  <button onClick={openChainModal} type="button">
-                    Wrong network
-                  </button>
-                );
-              }
-
-              return (
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button onClick={openChainModal} style={{ display: 'flex', alignItems: 'center' }} type="button">
-                    {chain.hasIcon && (
-                      <div
-                        style={{
-                          background: chain.iconBackground,
-                          width: 36,
-                          height: 36,
-                          borderRadius: 999,
-                          overflow: 'hidden',
-                          marginRight: 4,
-                        }}
-                      >
-                        {chain.iconUrl && (
-                          <img alt={chain.name ?? 'Chain icon'} src={chain.iconUrl} style={{ width: 36, height: 36 }} />
-                        )}
-                      </div>
-                    )}
-                    {chain.name}
-                  </button>
-                </div>
-              );
-            })()}
-          </div>
-        );
-      }}
-    </ConnectButton.Custom>
+    <>
+      {connectors.map((connector) => (
+        <button
+          disabled={!connector.ready}
+          key={connector.id}
+          onClick={() => connect({ connector })}
+          className="rounded-xl bg-[#3898FF] px-[14px] py-2 font-bold"
+        >
+          <RenderChain chain={prop.chain} />
+          {!connector.ready && ' (unsupported)'}
+          {isLoading &&
+            connector.id === pendingConnector?.id &&
+            ' (connecting)'}
+        </button>
+      ))}
+    </>
   );
 }

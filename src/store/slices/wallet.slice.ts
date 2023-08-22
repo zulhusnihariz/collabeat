@@ -2,9 +2,16 @@ import { StateCreator } from 'zustand';
 import { resetters } from '..';
 
 export enum CURRENT_CHAIN {
+  // mainnet
+  ETHEREUM = "ethereum",
+  POLYGON = "polygon",
+  BINANCE = "binance",
   SOLANA = 'solana',
   EVM = 'evm',
   NEAR = 'near',
+  // testnet
+  GOERLI = "goerli",
+  MUMBAI = "mumbai"
 }
 
 export type Wallet = {

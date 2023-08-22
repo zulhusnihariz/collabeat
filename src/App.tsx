@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
-import { connectorsForWallets, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
-import { goerli, polygonMumbai } from 'wagmi/chains';
+// import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
+// import { connectorsForWallets, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
+import { MetaMaskConnector } from '@wagmi/core/connectors/metaMask'
+import { bsc, bscTestnet, goerli, mainnet, polygon, polygonMumbai } from 'wagmi/chains';
 import { createConfig, configureChains, WagmiConfig } from 'wagmi';
 import { infuraProvider } from 'wagmi/providers/infura';
 import { publicProvider } from 'wagmi/providers/public';
@@ -11,7 +12,7 @@ import './App.css'
 // Hook
 import { IpfsProvider } from 'hooks/use-ipfs';
 import { AlertMessageProvider } from 'hooks/use-alert-message';
-import { rainbowWeb3AuthConnector } from 'hooks/rainbow-web3auth-connector';
+// import { rainbowWeb3AuthConnector } from 'hooks/rainbow-web3auth-connector';
 // Router
 import {
   Route,
@@ -42,15 +43,16 @@ const App = () => {
   )
 }
 
-const currentChain = [];
-switch (import.meta.env.VITE_CHAIN_ID) {
-  case '80001':
-    currentChain.push(polygonMumbai);
-    break;
-  case 'goerli':
-  default:
-    currentChain.push(goerli);
-}
+const currentChain = [
+  // mainnet
+  mainnet,
+  polygon,
+  bsc,
+  // tesnet
+  goerli,
+  polygonMumbai,
+  bscTestnet
+];
 
 // Web3 Configs
 const { chains, publicClient } = configureChains(currentChain, [
@@ -65,20 +67,14 @@ const { chains, publicClient } = configureChains(currentChain, [
   publicProvider(),
 ]);
 
-const connectors = connectorsForWallets([
-  {
-    groupName: 'Recommended',
-    wallets: [
-      rainbowWeb3AuthConnector({ chains }),
-      metaMaskWallet({
-        chains,
-        projectId: '',
-      }),
-    ],
-  },
-]);
-
-const wagmiConfig = createConfig({ autoConnect: true, connectors, publicClient });
+const wagmiConfig = createConfig(
+  { 
+    autoConnect: false, 
+    connectors: [
+      new MetaMaskConnector({ chains })
+    ], 
+    publicClient 
+  });
 
 export function Web3Wrapper({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -88,21 +84,10 @@ export function Web3Wrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider
-        appInfo={{
-          appName: import.meta.env.APPNAME,
-          learnMoreUrl: import.meta.env.APPURL,
-        }}
-        chains={chains}
-        initialChain={polygonMumbai} // Optional, initialChain={1}, initialChain={chain.mainnet}, initialChain={gnosisChain}
-        showRecentTransactions={true}
-        theme={lightTheme()}
-      >
         <IpfsProvider>
           <AlertMessageProvider>{children}</AlertMessageProvider>
         </IpfsProvider>
         <SignInModal />
-      </RainbowKitProvider>
     </WagmiConfig>
   );
 }

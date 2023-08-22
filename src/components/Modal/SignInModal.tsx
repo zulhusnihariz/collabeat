@@ -4,6 +4,8 @@ import ConnectSolana from 'components/Connect/ConnectSolana';
 import ConnectWallet from 'components/Connect/ConnectWallet';
 import { useState } from 'react';
 import ConnectNear from 'components/Connect/ConnectNear';
+import { CURRENT_CHAIN } from 'store/slices/wallet.slice';
+import { bsc, mainnet, polygon } from 'wagmi/chains'
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -25,7 +27,9 @@ export default function SignInModal() {
             </Dialog.Description>
             <div className="w-full px-2 py-16 sm:px-0">
               <div className="flex flex-col gap-5 space-x-1 rounded-xl bg-blue-900/20 p-1">
-                <ConnectWallet />
+                <ConnectWallet chain={CURRENT_CHAIN.ETHEREUM} chainId={mainnet.id} />
+                <ConnectWallet chain={CURRENT_CHAIN.POLYGON} chainId={polygon.id} />
+                <ConnectWallet chain={CURRENT_CHAIN.BINANCE} chainId={bsc.id} />
                 <ConnectSolana />
                 <ConnectNear />
               </div>
