@@ -23,7 +23,7 @@ import PageEditor from 'pages/editor';
 import PageNft from 'pages/nft';
 import PageInventory from 'pages/inventory';
 import { ApiProvider } from 'hooks/use-api';
-
+import SignInModal from 'components/Modal/SignInModal';
 
 const App = () => {
   return (
@@ -101,6 +101,7 @@ export function Web3Wrapper({ children }: { children: React.ReactNode }) {
         <IpfsProvider>
           <AlertMessageProvider>{children}</AlertMessageProvider>
         </IpfsProvider>
+        <SignInModal />
       </RainbowKitProvider>
     </WagmiConfig>
   );

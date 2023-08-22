@@ -2,13 +2,12 @@ import { PlayerState, Sheet } from 'lib';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner, PlayIcon, StopIcon } from 'components/Icons/icons';
 import BufferWaveform from 'components/Waveform/BufferWaveForm';
-import { shortenAddress } from 'utils/';
 
 interface MusicCardProp {
-  tokenId: String;
   name: String;
   description: String;
   sheet: Sheet;
+  version: String,
   audioUrls: Array<string>;
   onHandleShareClicked: (datakey: string) => void;
   onHandlePlayClicked: (dataKey: string) => void;
@@ -39,10 +38,10 @@ const MusicCard = (prop: MusicCardProp) => {
       <div className="bg-red-900 rounded-lg px-4 py-2 text-white w-full">
         <div className="flex justify-between">
           <div className="">
-            <p className="text-left text-base font-semibold text-[#F6F8FF]">{`Collabeat #${prop.tokenId}`}</p>
-            <p className="text-left text-xs text-[#F6F8FF]">
+            <p className="text-left text-base font-semibold text-[#F6F8FF]">{`Collabeat #${prop.version}`}</p>
+            {/* <p className="text-left text-xs text-[#F6F8FF]">
               Started by <span className="text-[#FFE331]">{shortenAddress(prop.sheet.owner.toString())}</span>
-            </p>
+            </p> */}
           </div>
           <button
             onClick={() => prop.onHandlePlayClicked(prop.sheet.data_key.toString())}
@@ -67,7 +66,7 @@ const MusicCard = (prop: MusicCardProp) => {
 
         <div className="z-10 flex w-full items-center justify-between gap-2 py-2">
           <button
-            onClick={e => navigate(`/editor/${prop.sheet.data_key}/${prop.sheet.token_id}`)}
+            onClick={e => navigate(`/editor/${prop.sheet.data_key}`)}
             className="flex cursor-pointer flex-row items-center justify-center gap-2 rounded-3xl bg-[#ff00ae] px-3 py-1 md:hover:scale-105"
           >
             <span>Collaborate</span>

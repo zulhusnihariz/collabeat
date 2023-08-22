@@ -6,47 +6,7 @@ import { useEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { createMixedAudio } from "utils"
 import AddMusicIcon from 'assets/icons/addmusic.svg'
-
-const data = {
-  "title": "BoredApeYachtClub #1221",
-  "image": "https://ipfs.io/ipfs/QmTLj3bQ9HxAJY7CrGqwxVaAzMgghdDy4JKBaue8d5spHy",
-  "description": "One of the most popular mobile games ever! Are you sending \"sus\" memes in the discord channel all day? You should try the imposter clips as well to troll your friends. Check all the sound clips in the Among Us soundboard below."
-}
-
-const beats = {
-  "data": [
-    {
-        "owner": "0xba21df4cf0e779f46cadd58ccf5a24ce2512d09e",
-        "token_id": 8,
-        "data_key": "0c2437d898045ee74fb3f0e732e1e2a1edc73b761f8168d466b43a3507fc17c2",
-        "cid": "1",
-    },
-    {
-        "owner": "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",
-        "token_id": 195,
-        "data_key": "8896b35ed4f501e6582923f650d7f659817da5cf19a4ef88cb1ea7fd79b81ba3",
-        "cid": "2"
-    },
-    {
-      "owner": "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",
-      "token_id": 195,
-      "data_key": "8896b35ed4f501e6582923f650d7f659817da5cf19a4ef88cb1ea7fd79b81ba3",
-      "cid": "2"
-    },
-    {
-      "owner": "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",
-      "token_id": 195,
-      "data_key": "8896b35ed4f501e6582923f650d7f659817da5cf19a4ef88cb1ea7fd79b81ba3",
-      "cid": "2"
-    },
-    {
-      "owner": "0xc20de1a30487ec70fc730866f297f2e2f1e411f7",
-      "token_id": 195,
-      "data_key": "8896b35ed4f501e6582923f650d7f659817da5cf19a4ef88cb1ea7fd79b81ba3",
-      "cid": "2"
-    }
-  ]
-}
+import { keccak256 } from "@ethersproject/keccak256"
 
 const PageNft = () => {
   const location = useLocation()
@@ -54,10 +14,14 @@ const PageNft = () => {
 
   const { nft } = location.state || {}
 
+  const [latestVersion, setLatestVersion] = useState(0)
+  const [sheets, setSheets] = useState<Sheet[]>([])
+
   useEffect(() => {
     if(!nft) {
       navigate('/inventory')
     }
+    
   }, [nft, navigate])
 
   const [shareDialogState, setShareDialogState] = useState({
@@ -65,11 +29,33 @@ const PageNft = () => {
     opened: false,
   });
 
-  const [sheets, setSheets] = useState<Sheet[]>([]);
-
   useEffect(() => {
-    setSheets(beats.data)
-  }, [setSheets])
+    const getSheetVersions = async () => {
+      let v = 0
+      const sheets: Sheet[] = []
+
+      // eslint-disable-next-line no-constant-condition
+      while(true) {
+        const input = `${nft.address}${nft.token_id}${'binance'}${v}`
+        const key = keccak256(input).substring(2)
+        
+        const res = await fetch(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${key}`)
+        const metadata = await res.json()
+        if(metadata && metadata.length > 0) {
+          sheets.push({
+            data_key: key,
+            version: v.toString()
+          })
+          v++
+        } else {
+          setLatestVersion(v)
+          break
+        }
+      }
+    }
+
+    getSheetVersions()
+  }, [nft, setSheets])
 
   const [audioContext, setAudioContext] = useState(new AudioContext());
   const [audioPlayerState, setAudioPlayerState] = useState<{ [key: string]: PlayerState }>({});
@@ -140,24 +126,24 @@ const PageNft = () => {
         </div>
 
         <div className="mt-5 bg-[#181818] rounded p-4">
-          <div className="text-2xl font-semibold mb-4">Release Beats</div>
-          <div className="font-xs text-gray-400">You have have not release any beats yet</div>
+          <div className="text-2xl font-semibold mb-4">Release Audios</div>
+          <div className="font-xs text-gray-400">You have have not release any audios yet</div>
         </div>
         
         <div className="mt-5 bg-[#181818] rounded p-4">
-          <div className="text-2xl font-semibold mb-4">Unrelease Beats</div>
+          <div className="text-2xl font-semibold mb-4">Unrelease Audios</div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-4">
             <div className="bg-red-900 rounded-lg px-4 py-2 text-white w-full flex items-center justify-center cursor-pointer hover:border hover:border-white">
               <div className="block">
                 <img src={AddMusicIcon} className="mx-auto" />
-                <div className="text-sm mt-1">New Beat</div>
+                <div className="text-sm mt-1">New Audio</div>
               </div>
             </div>
           {sheets.map((sheet, index) => (
             <MusicCard
               sheet={sheet}
               key={index}
-              tokenId={sheet.token_id.toString()}
+              version={sheet.version}
               name={sheet.data_key.toString()}
               description={''}
               audioUrls={[]}
