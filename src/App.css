@@ -5,3 +5,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.icon-32 {
+  display: inline-block;
+  margin-right: 5px;
+  height: 16px;
+  width: 16px;
+}

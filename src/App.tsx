@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 // import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets';
 // import { connectorsForWallets, RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
 import { MetaMaskConnector } from '@wagmi/core/connectors/metaMask'
+import { PhantomConnector } from 'phantom-wagmi-connector';
 import { bsc, bscTestnet, goerli, mainnet, polygon, polygonMumbai } from 'wagmi/chains';
 import { createConfig, configureChains, WagmiConfig } from 'wagmi';
 import { infuraProvider } from 'wagmi/providers/infura';
@@ -71,7 +72,8 @@ const wagmiConfig = createConfig(
   { 
     autoConnect: false, 
     connectors: [
-      new MetaMaskConnector({ chains })
+      new MetaMaskConnector({ chains }),
+      new PhantomConnector({ chains })
     ], 
     publicClient 
   });

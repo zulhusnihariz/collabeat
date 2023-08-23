@@ -7,6 +7,8 @@ export enum CURRENT_CHAIN {
   POLYGON = "polygon",
   BINANCE = "binance",
   SOLANA = 'solana',
+  ARBITRUM = 'arbitrum',
+  CELO = 'celo',
   EVM = 'evm',
   NEAR = 'near',
   // testnet
