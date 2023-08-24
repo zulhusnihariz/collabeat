@@ -16,8 +16,7 @@ import { useParams } from 'react-router-dom'
 import exportImg from 'assets/icons/export.png'
 
 const PageEditor = () => {
-  const { nftKey, tokenId } = useParams()
-  console.log(nftKey, tokenId)
+  const { nftKey, version, tokenId } = useParams()
   const { address } = useAccount()
   const { showError } = useContext(AlertMessageContext)
 

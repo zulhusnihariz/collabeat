@@ -56,10 +56,6 @@ export default function SignInModal() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed left-1/2 md:w-3/4 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border border-slate-500 bg-[#0D0D0D] text-white">
           <Dialog.Panel>
-            {/* <Dialog.Title className="mb-4">Connect a wallet to continue</Dialog.Title>
-            <Dialog.Description>
-              Choose how you want to connect. If you don't have a wallet, you can select a provider and create one.
-            </Dialog.Description> */}
             <div className="w-full sm:px-0 grid grid-cols-4">
               <div>
                 <img

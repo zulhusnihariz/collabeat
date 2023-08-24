@@ -6,7 +6,9 @@ import { useEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 import { createMixedAudio } from "utils"
 import AddMusicIcon from 'assets/icons/addmusic.svg'
-import { keccak256 } from "@ethersproject/keccak256"
+import { toUtf8Bytes } from "@ethersproject/strings";
+import { keccak256 } from '@ethersproject/keccak256'
+import VersionModal from "components/Modal/VersionModal"
 
 const PageNft = () => {
   const location = useLocation()
@@ -14,8 +16,9 @@ const PageNft = () => {
 
   const { nft } = location.state || {}
 
-  const [latestVersion, setLatestVersion] = useState(0)
   const [sheets, setSheets] = useState<Sheet[]>([])
+  const [nftKey, setNftKey] = useState('')
+  const [tokenId, setTokenId] = useState('')
 
   useEffect(() => {
     if(!nft) {
@@ -29,33 +32,31 @@ const PageNft = () => {
     opened: false,
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
-    const getSheetVersions = async () => {
-      let v = 0
-      const sheets: Sheet[] = []
 
-      // eslint-disable-next-line no-constant-condition
-      while(true) {
-        const input = `${nft.address}${nft.token_id}${'binance'}${v}`
-        const key = keccak256(input).substring(2)
-        
-        const res = await fetch(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${key}`)
-        const metadata = await res.json()
-        if(metadata && metadata.length > 0) {
-          sheets.push({
-            data_key: key,
-            version: v.toString()
-          })
-          v++
-        } else {
-          setLatestVersion(v)
-          break
-        }
-      }
+    const init = () => {
+      const input = `${'binance'}${nft.address}${nft.token_id}`
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const key = keccak256(toUtf8Bytes(input)).substring(2)
+      setNftKey(key)
+      setTokenId(`${nft.token_id}`)
     }
-
-    getSheetVersions()
-  }, [nft, setSheets])
+    
+    if(!nftKey) {
+      init()
+    }
+    
+  }, [nft, setSheets, nftKey])
 
   const [audioContext, setAudioContext] = useState(new AudioContext());
   const [audioPlayerState, setAudioPlayerState] = useState<{ [key: string]: PlayerState }>({});
@@ -126,39 +127,40 @@ const PageNft = () => {
         </div>
 
         <div className="mt-5 bg-[#181818] rounded p-4">
-          <div className="text-2xl font-semibold mb-4">Release Audios</div>
+          <div className="text-2xl font-semibold mb-4">Released Audios</div>
           <div className="font-xs text-gray-400">You have have not release any audios yet</div>
         </div>
         
         <div className="mt-5 bg-[#181818] rounded p-4">
-          <div className="text-2xl font-semibold mb-4">Unrelease Audios</div>
+          <div className="text-2xl font-semibold mb-4">Unreleased Audios</div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-4">
-            <div className="bg-red-900 rounded-lg px-4 py-2 text-white w-full flex items-center justify-center cursor-pointer hover:border hover:border-white">
+            <button 
+              className="bg-red-900 rounded-lg px-4 py-2 text-white w-full flex items-center justify-center cursor-pointer hover:border hover:border-white"
+              onClick={() => openModal()}>
               <div className="block">
                 <img src={AddMusicIcon} className="mx-auto" />
                 <div className="text-sm mt-1">New Audio</div>
               </div>
-            </div>
-          {sheets.map((sheet, index) => (
-            <MusicCard
-              sheet={sheet}
-              key={index}
-              version={sheet.version}
-              name={sheet.data_key.toString()}
-              description={''}
-              audioUrls={[]}
-              onHandleShareClicked={dataKey =>
-                setShareDialogState({
-                  dataKey,
-                  opened: true,
-                })
-              }
-              onHandlePlayClicked={playerButtonHandler}
-              updatePlayerState={updatePlayerState}
-              audioState={audioPlayerState}
-              mixedAudio={mixedAudio ? mixedAudio[sheet.data_key.toString()] : undefined}
-            />
-          ))}
+            </button>
+              {sheets.map((sheet, index) => (
+                <MusicCard
+                  sheet={sheet}
+                  key={index}
+                  version={sheet.version}
+                  name={sheet.data_key.toString()}
+                  description={''}
+                  audioUrls={[]}
+                  onHandleShareClicked={dataKey =>
+                    setShareDialogState({
+                      dataKey,
+                      opened: true,
+                    })}
+                  onHandlePlayClicked={playerButtonHandler}
+                  updatePlayerState={updatePlayerState}
+                  audioState={audioPlayerState}
+                  mixedAudio={mixedAudio ? mixedAudio[sheet.data_key.toString()] : undefined}
+                />
+              ))}
           </div>
         </div>
 
@@ -175,6 +177,7 @@ const PageNft = () => {
         )}
       </div>
     </div>}
+    <VersionModal nftKey={nftKey} tokenId={tokenId} isOpen={isModalOpen} onClose={closeModal} version="89c337cb-0206-414e-a379-a78158538aec" />
     </>
   )
 }

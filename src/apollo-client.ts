@@ -53,9 +53,8 @@ const format = (minted: MintedNft) => {
     const contract_address = `${import.meta.env.VITE_COLLABEAT_NFT}`.toLowerCase()
     const tokenId: string = minted.tokenId 
     const chainId : string = import.meta.env.VITE_CHAIN_ID as string
-    const nonce : string = import.meta.env.VITE_NONCE as string
 
-    const input = `${contract_address}${tokenId}${chainId}${nonce}`
+    const input = `${contract_address}${tokenId}${chainId}`
     const data_key = keccak256(input).substring(2) // substring to remove "0x"
 
     return { id: minted.id, data_key: data_key, token_id: minted.tokenId, owner: minted.to }
