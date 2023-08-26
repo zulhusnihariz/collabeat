@@ -1,4 +1,4 @@
-import apiMoralisInstance from "services/moralis"
+import apiMoralisInstance from "adapter/moralis"
 
 export const getNftsByWalletAddress = (address:string, chain: string) => {
   return apiMoralisInstance({

@@ -35,7 +35,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<PageIndex />} />
             <Route path="/nft" element={<PageNft />} />
-            <Route path="/editor/:nftKey/:version/:tokenId" element={<PageEditor />} />
+            <Route path="/editor/:chainId/:tokenAddress/:tokenId/:version" element={<PageEditor />} />
             <Route path="/inventory" element={<PageInventory />} />
           </Routes>
         </MainLayout>

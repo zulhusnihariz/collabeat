@@ -4,11 +4,14 @@ import { useAccount, useSignMessage } from 'wagmi'
 // import { add_beat } from '_aqua/music'
 import { LoadingSpinner, PlayIcon, StopIcon } from 'components/Icons/icons'
 import { AlertMessageContext } from 'hooks/use-alert-message'
-
+import { useApi } from 'hooks/use-api'
 interface UploadProp {
   audioData: any
   dataKey: String
+  chainId: String
+  address: String
   tokenId: String
+  version: String
   onHandlePlayClicked: () => void
   onHandleStopClicked: () => void
   onHandleRecordClicked: () => any
@@ -22,6 +25,9 @@ const Upload = (prop: UploadProp) => {
   const [audioUrl, setAudioUrl] = useState<string>('')
 
   const { ipfs } = useIpfs()
+  const { rpc } = useApi()
+  const { publish } = rpc
+
   const { address } = useAccount()
 
   const { signMessageAsync } = useSignMessage({
@@ -69,19 +75,23 @@ const Upload = (prop: UploadProp) => {
     }
 
     if (audioUrl) signMessage()
-  }, [audioUrl, signMessageAsync])
+  }, [audioUrl, showError, signMessageAsync])
 
-  const add_new_beat = (signature: string) => {
+  const add_new_beat = async (signature: string) => {
     try {
-      // await add_beat(
-      //   prop.dataKey.toString(),
-      //   import.meta.env.VITE_TOKEN_KEY ?? '',
-      //   prop.tokenId.toString(),
-      //   '',
-      //   address as `0x${string}`,
-      //   signature,
-      //   audioUrl
-      // )
+      await publish(
+        '',
+        prop.chainId,
+        audioUrl,
+        '',
+        import.meta.env.VITE_META_CONTRACT_ID as String,
+        'metadata',
+        address as `0x${string}`,
+        signature,
+        prop.address.toString(),
+        prop.tokenId.toString(),
+        prop.version
+      )
     } catch (e: unknown) {
       console.log(e)
     }

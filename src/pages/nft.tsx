@@ -3,29 +3,60 @@ import MusicCard from "components/MusicCard"
 import ShareDialog from "components/ShareDialog"
 import { PlayerState, Sheet } from "lib"
 import { useEffect, useState } from "react"
-import { useLocation, useNavigate, useParams } from "react-router-dom"
-import { createMixedAudio } from "utils"
+import { useLocation, useNavigate } from "react-router-dom"
+import { createMixedAudio, formatDataKey } from "utils"
 import AddMusicIcon from 'assets/icons/addmusic.svg'
-import { toUtf8Bytes } from "@ethersproject/strings";
-import { keccak256 } from '@ethersproject/keccak256'
 import VersionModal from "components/Modal/VersionModal"
+import { Metadata } from "lib"
+import { useApi } from "hooks/use-api"
 
 const PageNft = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const {rpc} = useApi()
 
   const { nft } = location.state || {}
 
   const [sheets, setSheets] = useState<Sheet[]>([])
   const [nftKey, setNftKey] = useState('')
+  const [chainId, setChainId] = useState('')
+  const [tokenAddress, setTokenAddress] = useState('')
   const [tokenId, setTokenId] = useState('')
+  // versions
+  const [data, setData] = useState<String[]>([])
+  const [isDataLoaded, setIsDataLoaded] = useState(false)
 
   useEffect(() => {
+    const loadVersion = async () => {
+      const response = await rpc.getMetadataByBlock(
+        nft.chain as String, 
+        nft.token_address as String, 
+        nft.token_id as String, 
+        import.meta.env.VITE_META_CONTRACT_ID as String
+      )
+
+      const metadatas = response.data.result.metadatas as Metadata[]
+
+      const uniqueVersions: String[] = [];
+      metadatas.map(item => {
+          if (!uniqueVersions.includes(item.version)) {
+              uniqueVersions.push(item.version);
+          }
+      });
+
+      setIsDataLoaded(true)
+      setData(uniqueVersions)
+    }
+
     if(!nft) {
       navigate('/inventory')
     }
+
+    if(nft && !isDataLoaded && !nftKey) {
+      loadVersion()
+    }
     
-  }, [nft, navigate])
+  }, [nft, navigate, isDataLoaded, nftKey, rpc])
 
   const [shareDialogState, setShareDialogState] = useState({
     dataKey: '',
@@ -42,21 +73,22 @@ const PageNft = () => {
     setIsModalOpen(false);
   };
 
+  // init
   useEffect(() => {
 
     const init = () => {
-      const input = `${'binance'}${nft.address}${nft.token_id}`
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      const key = keccak256(toUtf8Bytes(input)).substring(2)
+      const key = formatDataKey(nft.chain_id, nft.address, nft.token_id)
       setNftKey(key)
-      setTokenId(`${nft.token_id}`)
+      setChainId(nft.chain_id)
+      setTokenAddress(nft.address)
+      setTokenId(nft.token_id)
     }
     
-    if(!nftKey) {
+    if(nft && !nftKey) {
       init()
     }
     
-  }, [nft, setSheets, nftKey])
+  }, [nft, nftKey])
 
   const [audioContext, setAudioContext] = useState(new AudioContext());
   const [audioPlayerState, setAudioPlayerState] = useState<{ [key: string]: PlayerState }>({});
@@ -177,7 +209,7 @@ const PageNft = () => {
         )}
       </div>
     </div>}
-    <VersionModal nftKey={nftKey} tokenId={tokenId} isOpen={isModalOpen} onClose={closeModal} version="89c337cb-0206-414e-a379-a78158538aec" />
+    <VersionModal chainId={chainId} tokenAddress={tokenAddress} tokenId={tokenId} isOpen={isModalOpen} onClose={closeModal} version="89c337cb-0206-414e-a379-a78158538aec" />
     </>
   )
 }

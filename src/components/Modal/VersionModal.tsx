@@ -6,7 +6,8 @@ interface VersionModalProp {
   isOpen: boolean,
   version: String,
   onClose: () => void,
-  nftKey: String,
+  chainId: String,
+  tokenAddress: String,
   tokenId: String
 }
 
@@ -15,7 +16,7 @@ const VersionModal = (prop: VersionModalProp) => {
   const navigate = useNavigate();
 
   const closeDialog = () => {
-    navigate(`/editor/${prop.nftKey}/${prop.version}/${prop.tokenId}`)
+    navigate(`/editor/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`)
     prop.onClose();
   }
 

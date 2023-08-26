@@ -1,3 +1,7 @@
+import { keccak256 } from '@ethersproject/keccak256';
+import { toUtf8Bytes } from '@ethersproject/strings';
+import { encode } from 'bs58';
+
 export * from './abbreviate-balance';
 
 export function getSongLength(arrayOfAudioBuffers: AudioBuffer[]) {
@@ -112,3 +116,43 @@ export const catchAsync = async <T, A>(asyncFunction: (args: A) => Promise<T>, a
   const result = await asyncFunction(args);
   return result;
 };
+
+export function networkToChainId(chain: string) {
+
+  let chainId = '';
+
+  switch(chain.toLowerCase()) {
+    case 'ethereum':
+      chainId = '1';
+      break
+    case 'polygon':
+      chainId = '137'
+      break
+    case 'binance':
+      chainId = '56'
+      break
+    case 'arbitrum':
+      chainId = '42161'
+      break
+    case 'celo':
+      chainId = '42220'
+      break
+    case 'solana':
+      chainId = 'solana'
+      break
+    case 'near':
+      chainId = 'near'
+      break  
+    default:
+      break;
+  }
+
+  return chainId
+}
+
+export function formatDataKey(chain_id: String, address: String, token_id: String) {
+  const input = `${chain_id}${address}${token_id}`
+  const key = keccak256(toUtf8Bytes(input)).substring(2)
+  const buffer = new TextEncoder().encode(key)
+  return encode(buffer)
+}

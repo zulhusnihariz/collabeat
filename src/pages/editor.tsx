@@ -1,5 +1,5 @@
 import Waveform from 'components/Waveform'
-import { AudioState, PlayerState, SelectedAudio } from 'lib'
+import { AudioState, Metadata, PlayerState, SelectedAudio } from 'lib'
 import { useContext, useEffect, useState } from 'react'
 import RecordingDialog from 'components/RecordingDialog'
 import MintButton from 'components/MintButton'
@@ -9,21 +9,25 @@ import { DownloadIcon, JSONIcon, LoadingSpinner, ShareIcon } from 'components/Ic
 import LoadingIndicator from 'components/LoadingIndicator'
 import { useAccount } from 'wagmi'
 import { AlertMessageContext } from 'hooks/use-alert-message'
-import { createMixedAudio } from 'utils'
+import { createMixedAudio, formatDataKey } from 'utils'
 import audioBuffertoWav from 'audiobuffer-to-wav'
 import { check_if_bookmarked } from 'apollo-client'
 import { useParams } from 'react-router-dom'
 import exportImg from 'assets/icons/export.png'
+import { useApi } from "hooks/use-api"
 
 const PageEditor = () => {
-  const { nftKey, version, tokenId } = useParams()
+  const { chainId, tokenAddress, version, tokenId } = useParams()
   const { address } = useAccount()
+  const {rpc} = useApi()
+
   const { showError } = useContext(AlertMessageContext)
 
   const [displayDownloadButton, setDisplayDownloadButton] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
-  const [data, setData] = useState<AudioState>()
+  const [nftKey, setNftKey] = useState('')
+  const [data, setData] = useState<Metadata[]>()
   const [isLoad, setIsLoad] = useState(false)
   const [filteredData, setFilteredData] = useState<Array<AudioState>>([])
   const [forkData, setForkData] = useState<Array<SelectedAudio>>([])
@@ -40,45 +44,59 @@ const PageEditor = () => {
     if (finishedCounter === 0) setAllState(PlayerState.STOP)
   }, [finishedCounter])
 
+  // init
   useEffect(() => {
-    if (data && !isLoad) {
-      const filtered = []
-      for (const key in data) {
-        if (key.toLowerCase().startsWith('0x')) {
-          filtered.push({
-            key,
-            data: data[key as keyof AudioState],
-            isMuted: false,
-            playerState: PlayerState.STOP,
-          } as AudioState)
-        }
-      }
-      setFilteredData(filtered)
-      setIsLoad(true)
 
-      if (filtered.length > 10) {
-        setCanRecord(false)
-      } else {
-        setCanRecord(true)
-      }
+    const init = () => {
+      const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String)
+      setNftKey(key)
     }
-  }, [isLoad, data, canRecord])
+    
+    if(!nftKey) {
+      init()
+    }
+    
+  }, [chainId, nftKey, tokenAddress, tokenId])
 
   useEffect(() => {
     const load = async () => {
       try {
-        const d = await fetch(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${nftKey}`)
-        const j = await d.json()
-        setData(j)
+        const response = await rpc.getMetadataUseKeyByBlock(
+          nftKey as String,
+          import.meta.env.VITE_META_CONTRACT_ID as String
+        )
+        const metadatas = response.data.result.metadatas as Metadata[]
+        const filteredData: AudioState[] = [];
+        for(const meta of metadatas) {
+          if(meta.version === version) {
+            const res = await rpc.getContentFromIpfs(meta.cid)
+            console.log(res)
+            filteredData.push({
+              key: meta.public_key,
+              data: res.data,
+              isMuted: false,
+              playerState: PlayerState.STOP,
+            } as AudioState)
+          }
+        }
+
+        setFilteredData(filteredData)
+        setIsLoad(true)
+
+        if (filteredData.length > 10) {
+          setCanRecord(false)
+        } else {
+          setCanRecord(true)
+        }
       } catch (e) {
         console.log(e)
       }
     }
 
-    if (data == null && nftKey) {
+    if (data == null && nftKey && !isLoad) {
       load()
     }
-  }, [nftKey, data])
+  }, [nftKey, data, isLoad, rpc, version])
 
   useEffect(() => {
     const checkBookmarked = async (tokenId: string) => {
@@ -188,7 +206,7 @@ const PageEditor = () => {
   async function downloadBeat() {
     setIsDownloading(true)
 
-    const mixed = await createMixedAudio(audioContext, nftKey!)
+    const mixed = await createMixedAudio(audioContext, nftKey)
     const blob = new Blob([audioBuffertoWav(mixed)], { type: 'audio/wav' })
 
     const url = window.URL.createObjectURL(blob)
@@ -318,7 +336,7 @@ const PageEditor = () => {
           </div>
         )}
         <div className="w-full">
-          {filteredData.length > 0 ? (
+          {filteredData.length > 0 || isLoad ? (
             filteredData.map((audioState, key) => {
               if (audioState.data) {
                 return (
@@ -350,7 +368,10 @@ const PageEditor = () => {
       {isDialogRecordingOpened && nftKey && tokenId && (
         <RecordingDialog
           dataKey={nftKey}
+          chainId={chainId as String}
+          address={tokenAddress as String}
           tokenId={tokenId}
+          version={version as String}
           isOpened={isDialogRecordingOpened}
           onDialogClosed={() => onHandleDialogClosed()}
           setAllMuted={muted => setAllMuted(muted)}

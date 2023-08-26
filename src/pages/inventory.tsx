@@ -2,6 +2,8 @@ import { useApi } from "hooks/use-api"
 import { Nft } from "lib"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { networkToChainId } from "utils"
+import { useNetwork } from "wagmi"
 
 const PageInventory = () => {
 
@@ -10,13 +12,17 @@ const PageInventory = () => {
 
   const [nfts, setNfts] = useState<Nft[]>([])
   const [hasRead, setHasRead] = useState(false)
+
+  const { chain } = useNetwork()
+  
   useEffect(() => {
     const fetchNfts = async () => {
+
+      if(!chain) { return }
       try {
-        // TODO, make it dynamic by reading the wallet context
         const response = await getNftsByWalletAddress("0x5Ce6B303b0d2BCA7Ce9B724Ba10210D1684c6b02", "binance")
         
-        const data = response.data.result.map((d: { token_address: any; token_id: any; metadata: string }) => {
+        const nfts = response.data.result.map((d: { token_address: any; token_id: any; metadata: string }) => {
           
           const meta = JSON.parse(d.metadata)
           if (meta.image.startsWith("ipfs://")) {
@@ -26,12 +32,12 @@ const PageInventory = () => {
           return {
             address: d.token_address,
             token_id: d.token_id,
-            chain_id: 'binance',
+            chain_id: networkToChainId(chain?.name),
             metadata: meta
           }
         }) as Nft[]
 
-        setNfts(data)
+        setNfts(nfts)
         setHasRead(true)
       } catch (e) {
         console.log(e)
@@ -39,10 +45,11 @@ const PageInventory = () => {
     }
 
     if(!hasRead){
+      if(!chain) { return } 
       fetchNfts()
     }
 
-  }, [hasRead, nfts, getNftsByWalletAddress])
+  }, [hasRead, nfts, getNftsByWalletAddress, chain])
 
   return (
     <div className="flex justify-center">

@@ -10,7 +10,10 @@ import Upload from './Upload'
 import { AudioState, PlayerState } from 'lib'
 interface RecordingDialogProp {
   dataKey: String
+  chainId: String
+  address: String
   tokenId: String
+  version: String
   isOpened: boolean
   onDialogClosed: () => void
   setAllMuted: (muted: boolean) => void
@@ -217,7 +220,10 @@ const RecordingDialog = (prop: RecordingDialogProp) => {
                     <Upload
                       audioData={audioData}
                       dataKey={prop.dataKey}
+                      chainId={prop.chainId}
+                      address={prop.address}
                       tokenId={prop.tokenId}
+                      version={prop.version}
                       isAllBeatsMuted={isAllBeatsMuted}
                       isRecordedPlaying={filteredData[filteredData.length - 1].playerState === PlayerState.PLAY}
                       onHandleMuteClicked={muted => onHandleMuteClicked(muted)}
