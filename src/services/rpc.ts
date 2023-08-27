@@ -54,9 +54,4 @@ const publish = (alias: String, chain_id: String, data: String, mcdata: String, 
   })
 }
 
-const getMetadataByBlock = (chain: String, address: String, token_id: String, meta_contract_id: String) => {
-  const nftKey = formatDataKey(chain, address, token_id)
-  return getMetadataUseKeyByBlock(nftKey, meta_contract_id)
-}
-
-export default {getMetadataByBlock, getMetadataAllVersion, getMetadataUseKeyByBlock, getContentFromIpfs, publish}
+export default {getMetadataAllVersion, getMetadataUseKeyByBlock, getContentFromIpfs, publish}

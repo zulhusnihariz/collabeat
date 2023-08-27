@@ -49,6 +49,7 @@ const PageEditor = () => {
 
     const init = () => {
       const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String)
+      console.log(key)
       setNftKey(key)
     }
     
@@ -70,10 +71,11 @@ const PageEditor = () => {
         for(const meta of metadatas) {
           if(meta.version === version) {
             const res = await rpc.getContentFromIpfs(meta.cid)
+            const data = JSON.parse(res.data.result.content)
             console.log(res)
             filteredData.push({
               key: meta.public_key,
-              data: res.data,
+              data: data.content,
               isMuted: false,
               playerState: PlayerState.STOP,
             } as AudioState)
@@ -387,7 +389,11 @@ const PageEditor = () => {
           onDialogClosed={() => setIsDialogForkOpened(false)}
         />
       )}
-      {isShareDialogShow && nftKey && <ShareDialog dataKey={nftKey} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
+      {isShareDialogShow && nftKey && 
+        <ShareDialog chainId={chainId as String}
+          tokenAddress={tokenAddress as String}
+          tokenId={tokenId as String}
+          version={version as String} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
     </>
   )
 }

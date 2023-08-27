@@ -1,10 +1,9 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import { v4 as uuidv4 } from 'uuid';
 interface VersionModalProp {
   isOpen: boolean,
-  version: String,
   onClose: () => void,
   chainId: String,
   tokenAddress: String,
@@ -14,16 +13,29 @@ interface VersionModalProp {
 const VersionModal = (prop: VersionModalProp) => {
   
   const navigate = useNavigate();
+  
+  const [uuid, setUuid] = useState<String>('')
 
-  const closeDialog = () => {
-    navigate(`/editor/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`)
+  useEffect(() => {
+    if(!uuid) {
+      const id = uuidv4()
+      setUuid(id as String)
+    }
+  }, [uuid])
+
+  const redirectToEditor = () => {
+    navigate(`/editor/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${uuid}`)
     prop.onClose();
+  }
+  
+  const closeDialog = () => {
+    prop.onClose()
   }
 
   return (
     <>
-      <Transition appear show={prop.isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={prop.onClose}>
+      <Transition appear show={prop.isOpen} as={Fragment} afterLeave={() => setUuid('')}>
+        <Dialog as="div" className="relative z-10" onClose={closeDialog}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -55,7 +67,7 @@ const VersionModal = (prop: VersionModalProp) => {
                     New version
                   </Dialog.Title>
                   <div className="w-full text-sm text-center bg-gray-800 text-gray-400 p-3 rounded-xl mt-2">
-                  {prop.version}
+                  {uuid}
                   </div>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
@@ -67,7 +79,7 @@ const VersionModal = (prop: VersionModalProp) => {
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={closeDialog}
+                      onClick={redirectToEditor}
                     >
                       Got it, thanks!
                     </button>

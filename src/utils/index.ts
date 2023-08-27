@@ -1,5 +1,4 @@
-import { keccak256 } from '@ethersproject/keccak256';
-import { toUtf8Bytes } from '@ethersproject/strings';
+import SHA256 from 'crypto-js/sha256';
 import { encode } from 'bs58';
 
 export * from './abbreviate-balance';
@@ -152,7 +151,21 @@ export function networkToChainId(chain: string) {
 
 export function formatDataKey(chain_id: String, address: String, token_id: String) {
   const input = `${chain_id}${address}${token_id}`
-  const key = keccak256(toUtf8Bytes(input)).substring(2)
-  const buffer = new TextEncoder().encode(key)
-  return encode(buffer)
+  const sha256Hash = SHA256(input).toString()
+  const uint8Array = hexToUint8Array(sha256Hash)
+  return encode(uint8Array)
+}
+
+function hexToUint8Array(hexString: String) : Uint8Array {
+  if (hexString.length % 2 !== 0) {
+      throw new Error('Invalid hex string');
+  }
+  const arrayBuffer = new Uint8Array(hexString.length / 2);
+
+  for (let i = 0; i < hexString.length; i += 2) {
+      const byteValue = parseInt(hexString.substr(i, 2), 16);
+      arrayBuffer[i / 2] = byteValue;
+  }
+
+  return arrayBuffer;
 }

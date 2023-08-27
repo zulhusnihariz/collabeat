@@ -9,6 +9,7 @@ import AddMusicIcon from 'assets/icons/addmusic.svg'
 import VersionModal from "components/Modal/VersionModal"
 import { Metadata } from "lib"
 import { useApi } from "hooks/use-api"
+import VersionCard from "components/VersionCard"
 
 const PageNft = () => {
   const location = useLocation()
@@ -17,7 +18,6 @@ const PageNft = () => {
 
   const { nft } = location.state || {}
 
-  const [sheets, setSheets] = useState<Sheet[]>([])
   const [nftKey, setNftKey] = useState('')
   const [chainId, setChainId] = useState('')
   const [tokenAddress, setTokenAddress] = useState('')
@@ -28,10 +28,14 @@ const PageNft = () => {
 
   useEffect(() => {
     const loadVersion = async () => {
-      const response = await rpc.getMetadataByBlock(
-        nft.chain as String, 
-        nft.token_address as String, 
-        nft.token_id as String, 
+
+      const nftKey = formatDataKey(
+        nft.chain_id as String, 
+        nft.address as String, 
+        nft.token_id as String)
+
+      const response = await rpc.getMetadataUseKeyByBlock(
+        nftKey,
         import.meta.env.VITE_META_CONTRACT_ID as String
       )
 
@@ -59,7 +63,10 @@ const PageNft = () => {
   }, [nft, navigate, isDataLoaded, nftKey, rpc])
 
   const [shareDialogState, setShareDialogState] = useState({
-    dataKey: '',
+    chainId: '',
+    tokenAddress: '',
+    tokenId: '',
+    version: '',
     opened: false,
   });
 
@@ -174,23 +181,23 @@ const PageNft = () => {
                 <div className="text-sm mt-1">New Audio</div>
               </div>
             </button>
-              {sheets.map((sheet, index) => (
-                <MusicCard
-                  sheet={sheet}
+              {data.map((d, index) => (
+                <VersionCard
                   key={index}
-                  version={sheet.version}
-                  name={sheet.data_key.toString()}
-                  description={''}
-                  audioUrls={[]}
-                  onHandleShareClicked={dataKey =>
+                  nftKey={nftKey}
+                  chainId={nft.chain_id}
+                  tokenAddress={nft.address}
+                  tokenId={nft.token_id}
+                  version={d}
+                  onHandleShareClicked={() =>
                     setShareDialogState({
-                      dataKey,
+                      chainId: nft.chain_id,
+                      tokenAddress: nft.address,
+                      tokenId: nft.token_id,
+                      version: d.toString(),
                       opened: true,
-                    })}
-                  onHandlePlayClicked={playerButtonHandler}
-                  updatePlayerState={updatePlayerState}
-                  audioState={audioPlayerState}
-                  mixedAudio={mixedAudio ? mixedAudio[sheet.data_key.toString()] : undefined}
+                    })
+                  }
                 />
               ))}
           </div>
@@ -198,10 +205,16 @@ const PageNft = () => {
 
         {shareDialogState.opened && (
           <ShareDialog
-            dataKey={shareDialogState.dataKey}
+            chainId={shareDialogState.chainId}
+            tokenAddress={shareDialogState.tokenAddress}
+            tokenId={shareDialogState.tokenId}
+            version={shareDialogState.version}
             onHandleCloseClicked={() =>
               setShareDialogState({
-                dataKey: '',
+                chainId: '',
+                tokenAddress: '',
+                tokenId: '',
+                version: '',
                 opened: false,
               })
             }
@@ -209,7 +222,7 @@ const PageNft = () => {
         )}
       </div>
     </div>}
-    <VersionModal chainId={chainId} tokenAddress={tokenAddress} tokenId={tokenId} isOpen={isModalOpen} onClose={closeModal} version="89c337cb-0206-414e-a379-a78158538aec" />
+    <VersionModal chainId={chainId} tokenAddress={tokenAddress} tokenId={tokenId} isOpen={isModalOpen} onClose={closeModal} />
     </>
   )
 }
