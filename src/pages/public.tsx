@@ -33,7 +33,7 @@ const PagePublicEditor = () => {
   const [isDialogRecordingOpened, setIsDialogRecordingOpened] = useState(false);
   const [isShareDialogShow, setIsShareDialogShow] = useState(false);
   const [canRecord, setCanRecord] = useState(false);
-  const { initWeb3AuthModal, connectWeb3Auth } = useWeb3Auth();
+  const { connectWeb3Auth, isInitiated } = useWeb3Auth();
 
   // simple way to keep track whether all beats finished playing; once finished, set button to play
   const [finishedCounter, setFinishedCounter] = useState(-1);
@@ -105,12 +105,11 @@ const PagePublicEditor = () => {
 
   useEffect(() => {
     async function init() {
-      const web3Auth = await initWeb3AuthModal();
-      await connectWeb3Auth(web3Auth);
+      await connectWeb3Auth();
     }
 
-    init();
-  }, []);
+    if (isInitiated) init();
+  }, [isInitiated]);
 
   const setAllState = (state: PlayerState) => {
     setFilteredData(prev =>
