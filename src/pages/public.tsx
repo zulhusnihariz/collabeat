@@ -1,57 +1,57 @@
-import Waveform from 'components/Waveform'
-import { AudioState, Metadata, PlayerState, SelectedAudio } from 'lib'
-import { useContext, useEffect, useState } from 'react'
-import RecordingDialog from 'components/RecordingDialog'
-import ShareDialog from 'components/ShareDialog'
-import { DownloadIcon, JSONIcon, LoadingSpinner, ShareIcon } from 'components/Icons/icons'
-import LoadingIndicator from 'components/LoadingIndicator'
-import { useAccount } from 'wagmi'
-import { AlertMessageContext } from 'hooks/use-alert-message'
-import { createMixedAudio, formatDataKey } from 'utils'
-import audioBuffertoWav from 'audiobuffer-to-wav'
-import { check_if_bookmarked } from 'apollo-client'
-import { useParams } from 'react-router-dom'
-import exportImg from 'assets/icons/export.png'
-import { useApi } from "hooks/use-api"
+import Waveform from 'components/Waveform';
+import { AudioState, Metadata, PlayerState, SelectedAudio } from 'lib';
+import { useContext, useEffect, useState } from 'react';
+import RecordingDialog from 'components/RecordingDialog';
+import ShareDialog from 'components/ShareDialog';
+import { DownloadIcon, LoadingSpinner, ShareIcon } from 'components/Icons/icons';
+import LoadingIndicator from 'components/LoadingIndicator';
+import { useAccount } from 'wagmi';
+import { AlertMessageContext } from 'hooks/use-alert-message';
+import { createMixedAudio, formatDataKey } from 'utils';
+import audioBuffertoWav from 'audiobuffer-to-wav';
+import { check_if_bookmarked } from 'apollo-client';
+import { useParams } from 'react-router-dom';
+import exportImg from 'assets/icons/export.png';
+import { useApi } from 'hooks/use-api';
+import { useWeb3Auth } from 'hooks/use-web3auth';
 
 const PagePublicEditor = () => {
-  const { chainId, tokenAddress, version, tokenId } = useParams()
-  const { address } = useAccount()
-  const {rpc} = useApi()
+  const { chainId, tokenAddress, version, tokenId } = useParams();
+  const { address } = useAccount();
+  const { rpc } = useApi();
 
-  const { showError } = useContext(AlertMessageContext)
+  const { showError } = useContext(AlertMessageContext);
 
-  const [displayDownloadButton, setDisplayDownloadButton] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [displayDownloadButton, setDisplayDownloadButton] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const [nftKey, setNftKey] = useState('')
-  const [data, setData] = useState<Metadata[]>()
-  const [isLoad, setIsLoad] = useState(false)
-  const [filteredData, setFilteredData] = useState<Array<AudioState>>([])
+  const [nftKey, setNftKey] = useState('');
+  const [data, setData] = useState<Metadata[]>();
+  const [isLoad, setIsLoad] = useState(false);
+  const [filteredData, setFilteredData] = useState<Array<AudioState>>([]);
 
-  const [isDialogRecordingOpened, setIsDialogRecordingOpened] = useState(false)
-  const [isShareDialogShow, setIsShareDialogShow] = useState(false)
-  const [canRecord, setCanRecord] = useState(false)
+  const [isDialogRecordingOpened, setIsDialogRecordingOpened] = useState(false);
+  const [isShareDialogShow, setIsShareDialogShow] = useState(false);
+  const [canRecord, setCanRecord] = useState(false);
+  const { initWeb3AuthModal, connectWeb3Auth } = useWeb3Auth();
 
   // simple way to keep track whether all beats finished playing; once finished, set button to play
-  const [finishedCounter, setFinishedCounter] = useState(-1)
+  const [finishedCounter, setFinishedCounter] = useState(-1);
   useEffect(() => {
-    if (finishedCounter === 0) setAllState(PlayerState.STOP)
-  }, [finishedCounter])
+    if (finishedCounter === 0) setAllState(PlayerState.STOP);
+  }, [finishedCounter]);
 
   // init
   useEffect(() => {
-
     const init = () => {
-      const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String)
-      setNftKey(key)
+      const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String);
+      setNftKey(key);
+    };
+
+    if (!nftKey) {
+      init();
     }
-    
-    if(!nftKey) {
-      init()
-    }
-    
-  }, [chainId, nftKey, tokenAddress, tokenId])
+  }, [chainId, nftKey, tokenAddress, tokenId]);
 
   useEffect(() => {
     const load = async () => {
@@ -60,137 +60,146 @@ const PagePublicEditor = () => {
           nftKey as String,
           import.meta.env.VITE_META_CONTRACT_ID as String,
           version as String
-        )
+        );
 
-        const metadatas = response.data.result.metadatas as Metadata[]
+        const metadatas = response.data.result.metadatas as Metadata[];
         const filteredData: AudioState[] = [];
-        for(const meta of metadatas) {
-          if(meta.version === version) {
-            const res = await rpc.getContentFromIpfs(meta.cid)
-            const data = JSON.parse(res.data.result.content)
-            console.log(res)
+        for (const meta of metadatas) {
+          if (meta.version === version) {
+            const res = await rpc.getContentFromIpfs(meta.cid);
+            const data = JSON.parse(res.data.result.content);
+            console.log(res);
             filteredData.push({
               key: meta.public_key,
               data: data.content,
               isMuted: false,
               playerState: PlayerState.STOP,
-            } as AudioState)
+            } as AudioState);
           }
         }
 
-        setFilteredData(filteredData)
-        setIsLoad(true)
+        setFilteredData(filteredData);
+        setIsLoad(true);
 
         if (filteredData.length > 10) {
-          setCanRecord(false)
+          setCanRecord(false);
         } else {
-          setCanRecord(true)
+          setCanRecord(true);
         }
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
-    }
+    };
 
     if (data == null && nftKey && !isLoad) {
-      load()
+      load();
     }
-  }, [nftKey, data, isLoad, rpc, version])
+  }, [nftKey, data, isLoad, rpc, version]);
 
   useEffect(() => {
     const checkBookmarked = async (tokenId: string) => {
-      const isMinted = await check_if_bookmarked(address ?? '0x', tokenId)
-      setDisplayDownloadButton(isMinted)
+      const isMinted = await check_if_bookmarked(address ?? '0x', tokenId);
+      setDisplayDownloadButton(isMinted);
+    };
+  }, [nftKey, tokenId]);
+
+  useEffect(() => {
+    async function init() {
+      const web3Auth = await initWeb3AuthModal();
+      await connectWeb3Auth(web3Auth);
     }
-  }, [nftKey, tokenId])
+
+    init();
+  }, []);
 
   const setAllState = (state: PlayerState) => {
     setFilteredData(prev =>
       prev.map(audio => {
-        return { ...audio, playerState: state }
+        return { ...audio, playerState: state };
       })
-    )
+    );
 
-    if (state === PlayerState.PLAY) setFinishedCounter(filteredData.length)
-    if (state === PlayerState.STOP) setFinishedCounter(-1)
-  }
+    if (state === PlayerState.PLAY) setFinishedCounter(filteredData.length);
+    if (state === PlayerState.STOP) setFinishedCounter(-1);
+  };
 
   const setAllMuted = (muted: boolean) => {
     setFilteredData(prev =>
       prev.map(audio => {
-        return { ...audio, isMuted: muted }
+        return { ...audio, isMuted: muted };
       })
-    )
-  }
+    );
+  };
 
   const resetAllSelection = () => {
     setFilteredData(prev =>
       prev.map(audio => {
-        return { ...audio, selected: false, isMuted: false }
+        return { ...audio, selected: false, isMuted: false };
       })
-    )
-  }
+    );
+  };
 
   const onToggleSound = (state: AudioState) => {
-    const index = filteredData.findIndex(item => item.key === state.key)
-    const updatedData = [...filteredData]
+    const index = filteredData.findIndex(item => item.key === state.key);
+    const updatedData = [...filteredData];
 
     updatedData[index] = {
       ...updatedData[index],
       isMuted: !state.isMuted,
-    }
+    };
 
-    setFilteredData(updatedData)
-  }
+    setFilteredData(updatedData);
+  };
 
   const onToggleSelection = (state: AudioState) => {
-    const index = filteredData.findIndex(item => item.key === state.key)
-    const updatedData = [...filteredData]
+    const index = filteredData.findIndex(item => item.key === state.key);
+    const updatedData = [...filteredData];
 
     updatedData[index] = {
       ...updatedData[index],
       selected: !state.selected,
       isMuted: state.selected as boolean,
-    }
+    };
 
-    setFilteredData(updatedData)
-  }
+    setFilteredData(updatedData);
+  };
 
   const onHandleDialogClosed = () => {
     setTimeout(() => {
-      setData(undefined)
-      setFilteredData([])
-      setIsLoad(false)
-      setIsDialogRecordingOpened(!isDialogRecordingOpened)
-    }, 3000)
-  }
+      setData(undefined);
+      setFilteredData([]);
+      setIsLoad(false);
+      setIsDialogRecordingOpened(!isDialogRecordingOpened);
+    }, 3000);
+  };
 
-  const [audioContext] = useState(new AudioContext())
+  const [audioContext] = useState(new AudioContext());
 
   async function downloadBeat() {
-    setIsDownloading(true)
+    setIsDownloading(true);
 
-    const mixed = await createMixedAudio(audioContext, nftKey)
-    const blob = new Blob([audioBuffertoWav(mixed)], { type: 'audio/wav' })
+    const mixed = await createMixedAudio(audioContext, nftKey);
+    const blob = new Blob([audioBuffertoWav(mixed)], { type: 'audio/wav' });
 
-    const url = window.URL.createObjectURL(blob)
+    const url = window.URL.createObjectURL(blob);
 
-    const id = 'download-beats-link'
-    const fileName = `Collabeat #${tokenId}`
-    let linkEl = document.getElementById(id) as HTMLAnchorElement
+    const id = 'download-beats-link';
+    const fileName = `Collabeat #${tokenId}`;
+    let linkEl = document.getElementById(id) as HTMLAnchorElement;
 
     if (linkEl) {
-      linkEl.href = url
-      linkEl.setAttribute('download', fileName)
+      linkEl.href = url;
+      linkEl.setAttribute('download', fileName);
     } else {
-      linkEl = document.createElement('a')
-      linkEl.id = id
-      linkEl.href = url
-      linkEl.setAttribute('download', fileName)
-      document.body.appendChild(linkEl)
+      linkEl = document.createElement('a');
+      linkEl.id = id;
+      linkEl.href = url;
+      linkEl.setAttribute('download', fileName);
+      document.body.appendChild(linkEl);
     }
 
-    linkEl.click()
-    setIsDownloading(false)
+    linkEl.click();
+    setIsDownloading(false);
   }
 
   return (
@@ -288,7 +297,7 @@ const PagePublicEditor = () => {
                       />
                     </div>
                   </div>
-                )
+                );
               }
             })
           ) : (
@@ -309,13 +318,17 @@ const PagePublicEditor = () => {
           setAllState={state => setAllState(state)}
         />
       )}
-      {isShareDialogShow && nftKey && 
-        <ShareDialog chainId={chainId as String}
+      {isShareDialogShow && nftKey && (
+        <ShareDialog
+          chainId={chainId as String}
           tokenAddress={tokenAddress as String}
           tokenId={tokenId as String}
-          version={version as String} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
+          version={version as String}
+          onHandleCloseClicked={() => setIsShareDialogShow(false)}
+        />
+      )}
     </>
-  )
-}
+  );
+};
 
-export default PagePublicEditor
+export default PagePublicEditor;
