@@ -14,15 +14,17 @@ import {
 import { EmailIcon, FacebookIcon, LinkedinIcon, RedditIcon, TwitterIcon, WhatsappIcon } from 'react-share'
 
 interface ShareDialogProp {
-  chainId: String,
-  tokenAddress: String,
-  tokenId: String,
-  version: String,
+  chainId: String
+  tokenAddress: String
+  tokenId: String
+  version: String
   onHandleCloseClicked: () => void
 }
 
 const ShareDialog = (prop: ShareDialogProp) => {
-  const [shareUrl] = useState(`${window.location.origin}/public/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`)
+  const [shareUrl] = useState(
+    `${window.location.origin}/shared/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`
+  )
   const [title] = useState('Collabeat')
 
   return (

@@ -14,12 +14,12 @@ import audioBuffertoWav from 'audiobuffer-to-wav'
 import { check_if_bookmarked } from 'apollo-client'
 import { useParams } from 'react-router-dom'
 import exportImg from 'assets/icons/export.png'
-import { useApi } from "hooks/use-api"
+import { useApi } from 'hooks/use-api'
 
 const PageEditor = () => {
   const { chainId, tokenAddress, version, tokenId } = useParams()
   const { address } = useAccount()
-  const {rpc} = useApi()
+  const { rpc } = useApi()
 
   const { showError } = useContext(AlertMessageContext)
 
@@ -46,17 +46,15 @@ const PageEditor = () => {
 
   // init
   useEffect(() => {
-
     const init = () => {
       const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String)
       console.log(key)
       setNftKey(key)
     }
-    
-    if(!nftKey) {
+
+    if (!nftKey) {
       init()
     }
-    
   }, [chainId, nftKey, tokenAddress, tokenId])
 
   useEffect(() => {
@@ -68,9 +66,9 @@ const PageEditor = () => {
           version as String
         )
         const metadatas = response.data.result.metadatas as Metadata[]
-        const filteredData: AudioState[] = [];
-        for(const meta of metadatas) {
-          if(meta.version === version) {
+        const filteredData: AudioState[] = []
+        for (const meta of metadatas) {
+          if (meta.version === version) {
             const res = await rpc.getContentFromIpfs(meta.cid)
             const data = JSON.parse(res.data.result.content)
             console.log(res)
@@ -170,7 +168,7 @@ const PageEditor = () => {
       setFilteredData([])
       setIsLoad(false)
       setIsDialogRecordingOpened(!isDialogRecordingOpened)
-    }, 3000)
+    }, 2000)
   }
 
   const toggleForkingMode = () => {
@@ -390,11 +388,15 @@ const PageEditor = () => {
           onDialogClosed={() => setIsDialogForkOpened(false)}
         />
       )}
-      {isShareDialogShow && nftKey && 
-        <ShareDialog chainId={chainId as String}
+      {isShareDialogShow && nftKey && (
+        <ShareDialog
+          chainId={chainId as String}
           tokenAddress={tokenAddress as String}
           tokenId={tokenId as String}
-          version={version as String} onHandleCloseClicked={() => setIsShareDialogShow(false)} />}
+          version={version as String}
+          onHandleCloseClicked={() => setIsShareDialogShow(false)}
+        />
+      )}
     </>
   )
 }
