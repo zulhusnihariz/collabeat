@@ -2,8 +2,6 @@ import Waveform from 'components/Waveform'
 import { AudioState, Metadata, PlayerState, SelectedAudio } from 'lib'
 import { useContext, useEffect, useState } from 'react'
 import RecordingDialog from 'components/RecordingDialog'
-import MintButton from 'components/MintButton'
-import ForkDialog from 'components/ForkDialog'
 import ShareDialog from 'components/ShareDialog'
 import { DownloadIcon, JSONIcon, LoadingSpinner, ShareIcon } from 'components/Icons/icons'
 import LoadingIndicator from 'components/LoadingIndicator'
@@ -16,7 +14,7 @@ import { useParams } from 'react-router-dom'
 import exportImg from 'assets/icons/export.png'
 import { useApi } from "hooks/use-api"
 
-const PageEditor = () => {
+const PagePublicEditor = () => {
   const { chainId, tokenAddress, version, tokenId } = useParams()
   const { address } = useAccount()
   const {rpc} = useApi()
@@ -30,11 +28,8 @@ const PageEditor = () => {
   const [data, setData] = useState<Metadata[]>()
   const [isLoad, setIsLoad] = useState(false)
   const [filteredData, setFilteredData] = useState<Array<AudioState>>([])
-  const [forkData, setForkData] = useState<Array<SelectedAudio>>([])
-  const [isForking, setIsForking] = useState(false)
 
   const [isDialogRecordingOpened, setIsDialogRecordingOpened] = useState(false)
-  const [isDialogForkOpened, setIsDialogForkOpened] = useState(false)
   const [isShareDialogShow, setIsShareDialogShow] = useState(false)
   const [canRecord, setCanRecord] = useState(false)
 
@@ -49,7 +44,6 @@ const PageEditor = () => {
 
     const init = () => {
       const key = formatDataKey(chainId as String, tokenAddress as String, tokenId as String)
-      console.log(key)
       setNftKey(key)
     }
     
@@ -67,6 +61,7 @@ const PageEditor = () => {
           import.meta.env.VITE_META_CONTRACT_ID as String,
           version as String
         )
+
         const metadatas = response.data.result.metadatas as Metadata[]
         const filteredData: AudioState[] = [];
         for(const meta of metadatas) {
@@ -160,10 +155,6 @@ const PageEditor = () => {
     setFilteredData(updatedData)
   }
 
-  const onHandleCheckMetadata = () => {
-    window.open(`${import.meta.env.VITE_LINEAGE_METADATA_URL}/${nftKey}`, '_blank')
-  }
-
   const onHandleDialogClosed = () => {
     setTimeout(() => {
       setData(undefined)
@@ -171,37 +162,6 @@ const PageEditor = () => {
       setIsLoad(false)
       setIsDialogRecordingOpened(!isDialogRecordingOpened)
     }, 3000)
-  }
-
-  const toggleForkingMode = () => {
-    if (!address) {
-      showError('Connect your wallet to fork this beat')
-      return
-    }
-
-    setIsForking(!isForking)
-
-    if (isForking) {
-      resetAllSelection()
-    } else {
-      setAllMuted(true)
-    }
-  }
-
-  const fork = () => {
-    const selections: SelectedAudio[] = []
-
-    filteredData.forEach(audio => {
-      if (audio.selected) {
-        selections.push({
-          owner: audio.key,
-          data_key: nftKey,
-          cid: audio.data,
-        } as SelectedAudio)
-      }
-    })
-
-    setForkData(selections)
   }
 
   const [audioContext] = useState(new AudioContext())
@@ -266,24 +226,12 @@ const PageEditor = () => {
               </button>
             )}
 
-            {!isForking && canRecord && (
+            {canRecord && (
               <button
                 className="from-20% mr-2 inline-block min-w-[8rem] rounded-xl bg-gradient-to-t from-[#7224A7] to-[#FF3065] px-8 py-3  font-bold text-white md:hover:scale-105"
                 onClick={() => setIsDialogRecordingOpened(!isDialogRecordingOpened)}
               >
                 Record
-              </button>
-            )}
-
-            {isForking && (
-              <button
-                className="from-20% mr-2 min-w-[8rem] rounded-xl bg-gradient-to-t from-[#F5517B] to-[#FEDC00] px-8 py-3 font-bold text-white md:hover:scale-105"
-                onClick={() => {
-                  fork()
-                  setIsDialogForkOpened(true)
-                }}
-              >
-                Export
               </button>
             )}
           </div>
@@ -292,23 +240,6 @@ const PageEditor = () => {
           <div className="flex items-center justify-between py-5">
             <div className="flex gap-1 md:gap-2">
               {/* {tokenId && <MintButton tokenId={tokenId} />} */}
-
-              {isForking ? (
-                <button
-                  className={`flex h-20 w-20 flex-col items-center justify-center rounded-sm bg-red-500 p-2 text-xs font-bold text-white md:hover:scale-105`}
-                  onClick={() => toggleForkingMode()}
-                >
-                  <span> Cancel</span>
-                </button>
-              ) : (
-                <button
-                  className={`from-20% flex h-20 w-20 flex-col items-center justify-center rounded-sm bg-gradient-to-t from-[#F5517B] to-[#FEDC00] p-2 text-xs font-bold text-white md:hover:scale-105`}
-                  onClick={() => toggleForkingMode()}
-                >
-                  <img className="mb-1" src={exportImg} height={20} width={20} alt="fork" />
-                  <span>Export</span>
-                </button>
-              )}
 
               {displayDownloadButton && (
                 <button
@@ -329,9 +260,6 @@ const PageEditor = () => {
               )}
             </div>
             <div className="ml-2 inline-block">
-              <button className="mr-2 bg-green-100 p-3" onClick={onHandleCheckMetadata}>
-                <JSONIcon />
-              </button>
               <button className="bg-green-300 p-3 text-black" onClick={() => setIsShareDialogShow(true)}>
                 <ShareIcon />
               </button>
@@ -353,7 +281,7 @@ const PageEditor = () => {
                         playerState={audioState.playerState}
                         isMuted={audioState.isMuted}
                         onToggleSound={() => onToggleSound(audioState)}
-                        isSelecting={isForking}
+                        isSelecting={false}
                         isSelected={audioState.selected}
                         onSelectButtonClicked={() => onToggleSelection(audioState)}
                         onFinish={() => setFinishedCounter(prev => prev - 1)}
@@ -381,15 +309,6 @@ const PageEditor = () => {
           setAllState={state => setAllState(state)}
         />
       )}
-      {isDialogForkOpened && nftKey && tokenId && (
-        <ForkDialog
-          tokenId={tokenId}
-          dataKey={nftKey}
-          isOpened={isDialogForkOpened}
-          selectedAudios={forkData}
-          onDialogClosed={() => setIsDialogForkOpened(false)}
-        />
-      )}
       {isShareDialogShow && nftKey && 
         <ShareDialog chainId={chainId as String}
           tokenAddress={tokenAddress as String}
@@ -399,4 +318,4 @@ const PageEditor = () => {
   )
 }
 
-export default PageEditor
+export default PagePublicEditor

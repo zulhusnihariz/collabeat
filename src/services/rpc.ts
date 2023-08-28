@@ -16,13 +16,13 @@ const getMetadataAllVersion = (chain: String, address: String, token_id: String)
   })
 }
 
-const getMetadataUseKeyByBlock = (nftKey: String, meta_contract_id: String) => {
+const getMetadataUseKeyByBlock = (nftKey: String, meta_contract_id: String, version: String) => {
   return rpc({
     method: 'POST',
     data: JSON.stringify({
       "jsonrpc": "2.0",
       "method": "get_metadatas_by_block",
-      "params": [nftKey, meta_contract_id],
+      "params": [nftKey, meta_contract_id, version],
       "id": "1"
     })
   })

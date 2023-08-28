@@ -26,19 +26,24 @@ import PageNft from 'pages/nft';
 import PageInventory from 'pages/inventory';
 import { ApiProvider } from 'hooks/use-api';
 import SignInModal from 'components/Modal/SignInModal';
+import PublicLayout from 'layouts/PublicLayout';
+import PagePublicEditor from 'pages/public';
 
 const App = () => {
   return (
     <Web3Wrapper>
       <ApiProvider>
-        <MainLayout>
-          <Routes>
+        <Routes>
+          <Route element={<MainLayout children={undefined} />}>
             <Route path="/" element={<PageIndex />} />
             <Route path="/nft" element={<PageNft />} />
             <Route path="/editor/:chainId/:tokenAddress/:tokenId/:version" element={<PageEditor />} />
             <Route path="/inventory" element={<PageInventory />} />
-          </Routes>
-        </MainLayout>
+          </Route>
+          <Route element={<PublicLayout children={undefined} />}>
+          <Route path="/public/:chainId/:tokenAddress/:tokenId/:version" element={<PagePublicEditor />} />
+          </Route>
+        </Routes>
       </ApiProvider>
     </Web3Wrapper>
   )

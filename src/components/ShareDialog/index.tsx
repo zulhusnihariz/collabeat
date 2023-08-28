@@ -22,7 +22,7 @@ interface ShareDialogProp {
 }
 
 const ShareDialog = (prop: ShareDialogProp) => {
-  const [shareUrl] = useState(`${window.location.origin}/editor/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`)
+  const [shareUrl] = useState(`${window.location.origin}/public/${prop.chainId}/${prop.tokenAddress}/${prop.tokenId}/${prop.version}`)
   const [title] = useState('Collabeat')
 
   return (
