@@ -19,7 +19,6 @@ import { createConfig, configureChains, WagmiConfig } from 'wagmi'
 import { infuraProvider } from 'wagmi/providers/infura'
 import { publicProvider } from 'wagmi/providers/public'
 import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-
 import MainLayout from 'layouts/MainLayout'
 import './App.css'
 // Hook
