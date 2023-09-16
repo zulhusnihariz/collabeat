@@ -1,10 +1,9 @@
 import { usePrepareContractWrite, useContractWrite, useWaitForTransaction } from 'wagmi'
-import {  BigNumber } from 'ethers'
+import { BigNumber } from '@ethersproject/bignumber'
 import { LoadingSpinner } from 'components/Icons/icons'
 import { useContext, useState } from 'react'
 import { AlertMessageContext } from 'hooks/use-alert-message'
 import { parseEther } from 'viem'
-
 
 interface ConfirmButton {
   tokenId: String
