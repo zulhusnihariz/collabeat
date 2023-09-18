@@ -89,37 +89,4 @@ type MintedEvent = {
   blockTimestamp: string
 }
 
-const useGetEvents = (variables: ApolloClientFilter) => {
-  const query = `
-  query Minteds($first: Int, $skip: Int, $where: Minted_filter) {
-    minteds(first: $first, skip: $skip, where: $where) {
-      tokenId
-      id
-      data
-      transactionHash
-      blockTimestamp
-    }
-  }
-  `
-  return useQuery({
-    queryKey: [RQ_KEY.GET_SHEETS],
-    queryFn: async () => {
-      const { data } = await apolloQuery<{ minteds: MintedEvent[] }>({ query, variables })
-
-      return data?.minteds?.map((el: MintedEvent) => {
-        const [name, title] = decodeMinted(el.data)
-        return {
-          ...el,
-          data: { name, title },
-          data_key: formatDataKey(
-            `${import.meta.env.VITE_DEFAULT_CHAIN_ID}`,
-            `${import.meta.env.VITE_WEB3WALL_NFT}`,
-            `${el.tokenId}`
-          ),
-        }
-      })
-    },
-  })
-}
-
-export { useGetSheets, useGetBookmarkedSheets, useCheckBookmarkedSheets, useGetEvents }
+export { useGetSheets, useGetBookmarkedSheets, useCheckBookmarkedSheets }

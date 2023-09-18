@@ -87,10 +87,7 @@ const useGetPosts = (nft_key: string) => {
   return useQuery({
     queryKey: [RQ_KEY.GET_POSTS],
     queryFn: async () => {
-      const result = await rpc.getAllMetadataByDataKeyAndBlock(
-        nft_key,
-        `${import.meta.env.VITE_WEB3WALL_META_CONTRACT_ID}`
-      )
+      const result = await rpc.getAllMetadataByDataKeyAndBlock(nft_key, `${import.meta.env.VITE_META_CONTRACT_ID}`)
 
       const promises = result?.map(async (curr: any) => {
         const res = await rpc.getContentFromIpfs(curr.cid as string)
