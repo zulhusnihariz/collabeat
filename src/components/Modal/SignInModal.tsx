@@ -62,19 +62,19 @@ export default function SignInModal() {
     <>
       <Dialog open={modal.signUpMain.isOpen} onClose={() => setModalState({ signUpMain: { isOpen: false } })}>
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed left-1/2 md:w-3/4 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border border-slate-500 bg-[#0D0D0D] text-white">
+        <div className="fixed left-1/2 w-[90%] md:w-3/4 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border border-slate-500 bg-[#0D0D0D] text-white">
           <Dialog.Panel>
-            <div className="w-full sm:px-0 grid grid-cols-4">
-              <div>
+            <div className="md:w-full grid grid-cols-4">
+              <div className="hidden md:block">
                 <img
                   alt="Trainer"
                   src="https://images.unsplash.com/photo-1611510338559-2f463335092c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=928&q=80"
                   className="h-32 w-full object-cover md:h-full"
                 />
               </div>
-              <div className="col-span-3 flex flex-col gap-5 space-x-1 rounded-xl bg-blue-900">
-                <div className="hidden sm:block bg-blue-800 p-3">
-                  <nav className="flex gap-1" aria-label="Tabs">
+              <div className="col-span-full md:col-span-3 flex md:flex-col md:gap-5 md:space-x-1 rounded-xl bg-blue-900">
+                <div className="bg-blue-800 p-3">
+                  <nav className="flex flex-col md:flex-row gap-1" aria-label="Tabs">
                     {chains.map((chain, index) => {
                       const isSelected = index === selectedIndex
                       return (
@@ -100,7 +100,7 @@ export default function SignInModal() {
                     })}
                   </nav>
                 </div>
-                <div className="mt-3">
+                <div className="flex bg-blue-900 w-full justify-start items-center md:block md:mt-3">
                   <div className={chains[selectedIndex].name == 'Ethereum' ? '' : 'hidden'}>
                     <ConnectWallet chain={CURRENT_CHAIN.ETHEREUM} chainId={chains[selectedIndex].chain?.id as number} />
                   </div>

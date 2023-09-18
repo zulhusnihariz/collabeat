@@ -1,16 +1,4 @@
-import { useAccount, useNetwork } from 'wagmi'
-// import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useBoundStore } from 'store'
-import { CURRENT_CHAIN } from 'store/slices/wallet.slice'
-import { useEffect } from 'react'
-import { useConnect } from 'wagmi'
-
-interface WalletProp {
-  chain: CURRENT_CHAIN
-  chainId: number
-}
-
-const MetamaskLogo = () => {
+export const MetamaskLogo = () => {
   return (
     <svg className="mr-4" xmlns="http://www.w3.org/2000/svg" width="48" height="43" viewBox="0 0 212 189" id="metamask">
       <g fill="none" fillRule="evenodd">
@@ -91,7 +79,7 @@ const MetamaskLogo = () => {
   )
 }
 
-const PhantomLogo = () => {
+export const PhantomLogo = () => {
   return (
     <svg className="mr-4" width="48" height="40" viewBox="0 0 593 493" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -102,53 +90,17 @@ const PhantomLogo = () => {
   )
 }
 
-export default function ConnectWallet(prop: WalletProp) {
-  const { setCurrentWalletState, setWalletState, setModalState } = useBoundStore()
-  const { isConnected, isDisconnected, address } = useAccount()
-  const { chain } = useNetwork()
-
-  useEffect(() => {
-    if (isConnected) {
-      setModalState({ signUpMain: { isOpen: false } })
-      setCurrentWalletState({ chain: chain?.network as CURRENT_CHAIN, address, publicKey: address })
-      setWalletState({ evm: { address, publicKey: address, balance: { symbol: chain?.nativeCurrency.symbol } } })
-    }
-
-    if (isDisconnected) setCurrentWalletState({ chain: undefined })
-  }, [isConnected])
-
-  const { connect, connectors, isLoading, pendingConnector } = useConnect()
-
+export const NearLogo = () => {
   return (
-    <div className="flex justify-center">
-      <div className="w-2/3 grid gap-4">
-        {connectors.map(connector => (
-          <button
-            disabled={!connector.ready}
-            key={connector.id}
-            onClick={() => connect({ connector, chainId: prop.chainId })}
-            className="rounded-xl block w-full border border-gray-300 hover:border-green-800 hover:bg-green-600 hover:bg-opacity-20 px-8 py-4 font-semibold"
-          >
-            <div className="flex items-center">
-              {connector.id === 'metaMask' && (
-                <>
-                  <MetamaskLogo />
-                  <span className="hidden md:block">Metamask</span>
-                </>
-              )}
-              {connector.id === 'phantom' && (
-                <>
-                  <PhantomLogo />
-                  <span className="hidden md:block">Phantom</span>
-                </>
-              )}
-
-              {!connector.ready && ' (unsupported)'}
-              {isLoading && connector.id === pendingConnector?.id && ' (connecting)'}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
+    <svg
+      className="mr-4"
+      xmlns="http://www.w3.org/2000/svg"
+      width="48"
+      height="48"
+      viewBox="0 0 128 128"
+      id="near-protocol"
+    >
+      <path d="M91.81,23.38l-19.32,28a2,2,0,0,0,2.88,2.67L94,39v49L40.51,23.57a12.31,12.31,0,0,0-21.77,7.87v67c0,10.9,13,12.69,17.09,6.7l20-28.87a1.77,1.77,0,0,0-.08-2.12,1.79,1.79,0,0,0-2.51-.29L34,89.19V39.55L87.49,103.9c8.41,9.88,21.77,3.93,21.77-7.87V29C109.26,18.94,97,16,91.81,23.38Z"></path>
+    </svg>
   )
 }
