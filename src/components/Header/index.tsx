@@ -1,17 +1,14 @@
 import React from 'react'
 import { Disclosure } from '@headlessui/react'
 
-import logo from 'assets/img/logo.png'
-import {Link} from 'react-router-dom'
-import { ConnectedWalletInfo } from './ConnectedWalletInfo';
+import { Link } from 'react-router-dom'
+import { ConnectedWalletInfo } from './ConnectedWalletInfo'
 import { useBoundStore } from 'store'
 import { useConnectedWallet } from 'hooks/use-connected-wallet'
 
 export default function Header() {
-
-  const { setModalState, current } = useBoundStore();
-  useConnectedWallet();
-
+  const { setModalState, current } = useBoundStore()
+  useConnectedWallet()
   return (
     <Disclosure as="nav" className="bg-transparent">
       <div className="mx-auto max-w-[3840px] py-5">
