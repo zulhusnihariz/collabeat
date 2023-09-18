@@ -32,7 +32,7 @@ const Recording = (prop: RecordingProp) => {
       }, 1000)
     }
 
-    return () => clearInterval(intervalIdTime)
+    return () => clearInterval(intervalIdTime as unknown as number)
   }, [prop.state, timer])
 
   const onHandleStop = () => {
